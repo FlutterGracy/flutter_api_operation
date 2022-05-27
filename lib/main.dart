@@ -1,10 +1,8 @@
 import 'package:fetchdata/screen/holedo_home.dart';
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
-import 'dart:convert';
 
 void main() async {
-  await GetStorage.init();
+  // await GetStorage.init();
 
   runApp(const MaterialApp(home: MyApp()));
 }

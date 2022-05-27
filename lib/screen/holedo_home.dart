@@ -1,10 +1,7 @@
 import 'dart:convert';
 
 import 'package:fetchdata/model/holedo_model.dart';
-
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
-
 import '../service/holedo_service.dart';
 
 class HoledoHome extends StatefulWidget {
@@ -18,20 +15,24 @@ class _HoledoHomeState extends State<HoledoHome> {
   late Future<HoledoModel?> _holdedo;
 
   final HoledoService _holedoService = HoledoService();
+
+  // User? user;
+  TextEditingController? fNameController;
+  TextEditingController? lNameController;
+
   User? user;
-  late TextEditingController fullNameController;
 
   @override
   void initState() {
     // TODO: implement initState
     super.initState();
-    _holedoService;
-    _holdedo = _holedoService.getUserApi();
-    fullNameController =
-        TextEditingController(text: userStoreData.read('full_name'));
+    user;
+  fNameController=TextEditingController();
+  lNameController=TextEditingController();
   }
 
-  GetStorage userStoreData = GetStorage();
+  String? lname;
+  String? fname;
 
   @override
   Widget build(BuildContext context) {
@@ -39,36 +40,88 @@ class _HoledoHomeState extends State<HoledoHome> {
       appBar: AppBar(
         title: const Text('Holedo Home'),
       ),
-      body: FutureBuilder<HoledoModel?>(
-          future: _holdedo,
+      body: FutureBuilder<HoledoModel>(
+          future: _holedoService.getUserApi(),
           builder: (context, AsyncSnapshot snapshot) {
             if (snapshot.hasData) {
-              userStoreData.write(
-                  'full_name', snapshot.data!.data!.user!.fullName.toString());
-
+              // if (snapshot.data!.data!.user==null) {
+              //   return const Center(
+              //     child: Text('No Data available'),
+              //   );
+              // }
               return Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    Text(snapshot.data!.data!.user!.id.toString()),
                     Text(snapshot.data!.data!.user!.fullName.toString()),
-                    TextField(
-                      controller: fullNameController,
+                    Text(snapshot.data!.data!.user!.firstName.toString()),
+                    Text(snapshot.data!.data!.user!.lastName.toString()),
+
+                    // Text(snapshot.data!.data!.user!.lastName.toString()),
+                    Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: TextField(
+                        controller: fNameController,
+                        onChanged: (value) {
+                          fname = value;
+                        },
+                        decoration:
+                            InputDecoration(border: OutlineInputBorder()),
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: ElevatedButton(
-                        onPressed: () async {
-                          setState(() {
-                            _holdedo = _holedoService.updateUserProfileSummary(
-                                user!.id, fullNameController.text);
-                            print(snapshot.data!.data!.user!.fullName.toString());
-                          });
+                      child: TextField(
+                        controller: lNameController,
+                        onChanged: (value) {
+                          lname = value;
                         },
-                        child: const Text('Submit Data'),
+                        decoration:
+                            const InputDecoration(border: OutlineInputBorder()),
                       ),
+                    ),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        // print(fname);
+                        // print(lname);
+
+                        Map<String, dynamic> data = {
+                          "id": user?.id,
+                          // "first_name": fNameController?.text,
+                          // "last_name": lNameController?.text,
+                          "first_name": fname,
+                          "last_name": lname,
+                        };
+                        dynamic res = await _holedoService
+                            .updateUserProfileSummary(data);
+                        if (res?.errors == null) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Done: ${res?.messages}'),
+                              backgroundColor: Colors.green.shade300,
+                            ),
+                          );
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text('Error: ${res?.messages}'),
+                              backgroundColor: Colors.red.shade300,
+                            ),
+                          );
+                        }
+
+                        // print(lNameController.toString());
+                      },
+                      child: const Text('submit Data'),
                     )
                   ],
                 ),
+              );
+            } else if (snapshot.hasError) {
+              return Center(
+                child: Text('error::- ${snapshot.hasError.toString()}'),
               );
             } else {
               return const Center(
