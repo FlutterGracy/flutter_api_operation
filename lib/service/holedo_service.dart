@@ -1,6 +1,9 @@
 import 'dart:convert';
 
+import 'package:fetchdata/controller/auth_controller.dart';
 import 'package:fetchdata/model/holedo_model.dart';
+import 'package:get/get.dart' as Store;
+import 'package:get/get.dart';
 
 import 'package:http/http.dart' as http;
 
@@ -20,7 +23,6 @@ class HoledoService {
       var data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        // print(response.body);
         return HoledoModel.fromJson(data);
       } else {
         return Future.error('Server Error !');
@@ -35,54 +37,30 @@ class HoledoService {
       Map<String, dynamic> data) async {
     var token =
         'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM2MDgsImV4cCI6MTk2ODkwMTA3MH0.2ZAY9rbWkgPMVdqyZfJgkLSrJzj58M9Lixmca-2VGxg';
-    // try {
-    final response = await http.post(
-      Uri.parse('https://api.holedo.com/rest/users/me'),
-      body: jsonEncode(data),
-      headers: <String, String>{
-        'Content-Type': 'application/json; charset=UTF-8',
-        'Accept': 'application/json',
-        'AuthApi': 'Bearer ${token}'
-      },
-    );
-    if (response.statusCode == 200) {
-      print("updatees::: ${response.body}");
-      print(response.statusCode);
-      return HoledoModel.fromJson(jsonDecode(response.body));
-      // return "success";
-    } else {
-      throw Exception('Failed to update album.');
+    try {
+      final response = await http.post(
+        Uri.parse('https://${AuthData.apiHost}/rest/users/update'),
+
+        headers: <String, String>{
+          'Content-Type': 'application/json; charset=UTF-8',
+          'apikey': AuthData.apiKey,
+          'Accept': 'application/json',
+          // 'AuthApi': 'Bearer ${token}'
+        },
+        body: jsonEncode(data),
+      );
+      if (response.statusCode == 200) {
+        final model = Get.put(AuthController()).restoreModel();
+        model.setData = HoledoModel.fromJson(jsonDecode(response.body));
+        Get.find<AuthController>().authModel(model);
+        return model.data;
+
+      } else {
+        throw Exception('Failed to update album.');
+      }
+    } catch (SocketException) {
+      return Future.error('Error Fetching Data !');
     }
-    // } catch (SocketException) {
-    //   return Future.error('Error Fetching Data !');
-    // }
   }
 
-// Future<HoledoModel?> postUserApi(String firstName) async {
-//   var token =
-//       'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM4MjksImV4cCI6MTk2NzcyMjMyNX0.Nx62HzFr5GGZ-QbDYstApelOdKzOn5nWxuBS3K653Yc';
-//   var uri = 'https://api.holedo.com/rest/users/update';
-//
-//   final response = await http.post(
-//     Uri.parse(uri),
-//     headers: <String, String>{
-//       'Content-Type': 'application/json',
-//       'Accept': 'application/json',
-//       'AuthApi': 'Bearer ${token}'
-//     },
-//     body: jsonEncode(<String, String>{
-//       'first_Name': firstName,
-//     }),
-//   );
-
-//   if (response.statusCode == 200) {
-//     // If the server did return a 201 CREATED response,
-//     // then parse the JSON.
-//     return HoledoModel.fromJson(jsonDecode(response.body));
-//   } else {
-//     // If the server did not return a 201 CREATED response,
-//     // then throw an exception.
-//     throw Exception('Failed to create album.');
-//   }
-// }
 }
