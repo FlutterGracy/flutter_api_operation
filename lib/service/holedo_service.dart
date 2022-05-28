@@ -5,14 +5,10 @@ import 'package:fetchdata/model/holedo_model.dart';
 import 'package:http/http.dart' as http;
 
 class HoledoService {
-
-
-
-/// fetch data
+  /// fetch data
   Future<HoledoModel> getUserApi() async {
     var token =
         'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM2MDgsImV4cCI6MTk2ODkwMTA3MH0.2ZAY9rbWkgPMVdqyZfJgkLSrJzj58M9Lixmca-2VGxg';
-    // 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM4MjksImV4cCI6MTk2NzcyMjMyNX0.Nx62HzFr5GGZ-QbDYstApelOdKzOn5nWxuBS3K653Yc';
     var uri = 'https://api.holedo.com/rest/users/me';
 
     try {
@@ -24,7 +20,7 @@ class HoledoService {
       var data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
-        print(response.body);
+        // print(response.body);
         return HoledoModel.fromJson(data);
       } else {
         return Future.error('Server Error !');
@@ -33,50 +29,34 @@ class HoledoService {
       return Future.error('Error Fetching Data !');
     }
   }
-/// update data
-  Future<HoledoModel?> updateUserProfileSummary(
+
+  /// update data
+  Future<HoledoModel> updateUserProfileSummary(
       Map<String, dynamic> data) async {
     var token =
         'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM2MDgsImV4cCI6MTk2ODkwMTA3MH0.2ZAY9rbWkgPMVdqyZfJgkLSrJzj58M9Lixmca-2VGxg';
-    // 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJzdWIiOjM4MjksImV4cCI6MTk2NzcyMjMyNX0.Nx62HzFr5GGZ-QbDYstApelOdKzOn5nWxuBS3K653Yc';
-    try {
-      var response = await http.post(
-        Uri.parse('https://api.holedo.com/rest/users/me'),
-        body: jsonEncode(data),
-        headers: <String, String>{
-          'Content-Type': 'application/json; charset=UTF-8',
-          'Accept': 'application/json',
-          'AuthApi': 'Bearer ${token}'
-        },
-      );
-      if (response.statusCode == 200) {
-        print(response.body);
-        return HoledoModel.fromJson(response.body);
-        // return "success";
-      } else {
-        return Future.error('Server Error !');
-      }
-    } catch (SocketException) {
-      return Future.error('Error Fetching Data !');
+    // try {
+    final response = await http.post(
+      Uri.parse('https://api.holedo.com/rest/users/me'),
+      body: jsonEncode(data),
+      headers: <String, String>{
+        'Content-Type': 'application/json; charset=UTF-8',
+        'Accept': 'application/json',
+        'AuthApi': 'Bearer ${token}'
+      },
+    );
+    if (response.statusCode == 200) {
+      print("updatees::: ${response.body}");
+      print(response.statusCode);
+      return HoledoModel.fromJson(jsonDecode(response.body));
+      // return "success";
+    } else {
+      throw Exception('Failed to update album.');
     }
+    // } catch (SocketException) {
+    //   return Future.error('Error Fetching Data !');
+    // }
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Future<HoledoModel?> postUserApi(String firstName) async {
 //   var token =

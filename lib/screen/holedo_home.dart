@@ -1,8 +1,8 @@
 import 'dart:convert';
-
 import 'package:fetchdata/model/holedo_model.dart';
 import 'package:flutter/material.dart';
 import '../service/holedo_service.dart';
+import 'done.dart';
 
 class HoledoHome extends StatefulWidget {
   const HoledoHome({Key? key}) : super(key: key);
@@ -17,22 +17,38 @@ class _HoledoHomeState extends State<HoledoHome> {
   final HoledoService _holedoService = HoledoService();
 
   // User? user;
-  TextEditingController? fNameController;
-  TextEditingController? lNameController;
+  TextEditingController? fNameController = TextEditingController();
+  TextEditingController? lNameController = TextEditingController();
 
   User? user;
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    user;
-  fNameController=TextEditingController();
-  lNameController=TextEditingController();
-  }
+  bool isUpdating = false;
+  dynamic dd;
 
-  String? lname;
-  String? fname;
+  Future<void> updateData() async {
+    Map<String, dynamic> data = {
+      "id": user?.id,
+      "first_name": fNameController?.text,
+      "last_name": lNameController?.text,
+    };
+    dynamic res = await _holedoService.updateUserProfileSummary(data);
+
+    if (res?.success) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('success: ${res?.success}'),
+          backgroundColor: Colors.green.shade300,
+        ),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error: ${res?.messages}'),
+          backgroundColor: Colors.red.shade300,
+        ),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -63,9 +79,6 @@ class _HoledoHomeState extends State<HoledoHome> {
                       padding: EdgeInsets.all(8.0),
                       child: TextField(
                         controller: fNameController,
-                        onChanged: (value) {
-                          fname = value;
-                        },
                         decoration:
                             InputDecoration(border: OutlineInputBorder()),
                       ),
@@ -74,46 +87,13 @@ class _HoledoHomeState extends State<HoledoHome> {
                       padding: const EdgeInsets.all(8.0),
                       child: TextField(
                         controller: lNameController,
-                        onChanged: (value) {
-                          lname = value;
-                        },
                         decoration:
                             const InputDecoration(border: OutlineInputBorder()),
                       ),
                     ),
 
                     ElevatedButton(
-                      onPressed: () async {
-                        // print(fname);
-                        // print(lname);
-
-                        Map<String, dynamic> data = {
-                          "id": user?.id,
-                          // "first_name": fNameController?.text,
-                          // "last_name": lNameController?.text,
-                          "first_name": fname,
-                          "last_name": lname,
-                        };
-                        dynamic res = await _holedoService
-                            .updateUserProfileSummary(data);
-                        if (res?.errors == null) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Done: ${res?.messages}'),
-                              backgroundColor: Colors.green.shade300,
-                            ),
-                          );
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Error: ${res?.messages}'),
-                              backgroundColor: Colors.red.shade300,
-                            ),
-                          );
-                        }
-
-                        // print(lNameController.toString());
-                      },
+                      onPressed: updateData,
                       child: const Text('submit Data'),
                     )
                   ],
